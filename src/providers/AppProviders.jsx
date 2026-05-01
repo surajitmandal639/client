@@ -1,7 +1,7 @@
 "use client";
-import { AuthProvider } from "./AuthProvider";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/modules/auth/providers/AuthProvider";
 
 export default function AppProviders({ children }) {
   return (

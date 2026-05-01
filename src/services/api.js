@@ -1,51 +1,62 @@
+import { getCookie } from "@/lib/utils";
 
-// src/services/api.js
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+
+  console.log(process.env.NEXT_PUBLIC_API_URL);
+  
+
+// 🔐 get token from storage
+const getToken = () => {
+  // সার্ভার সাইড রেন্ডারিং (SSR) এর সময় কুকি চেক করা
+  if (typeof window === "undefined") return null;
+  
+  // ✅ localStorage এর বদলে Cookies থেকে টোকেন নিন
+  return getCookie("token"); 
+};
 
 const request = async (url, options = {}) => {
-  const res = await fetch(`/proxy${url}`, {
+  const token = getToken();
+console.log("Token in API request:", token);
+  const res = await fetch(`${BASE_URL}${url}`, {
     ...options,
-    credentials: "include",
+    // credentials: "include", // Send cookies with cross-origin requests
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+
+      // 🔥 Bearer Token added here
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+
       ...(options.headers || {}),
     },
   });
 
-  let data;
-  try {
-    data = await res.json();
-  } catch {
-    data = {};
-  }
+  const data = await res.json().catch(() => ({}));
 
-  // ❌ handle error
+  // ❌ error handling
   if (!res.ok) {
-    if (res.status === 401 && typeof window !== "undefined") {
-      const path = window.location.pathname;
-
-      // ❌ do nothing if already on "/"
-      if (
-        path !== "/" &&
-        !path.startsWith("/login") &&
-        !path.startsWith("/logout")
-      ) {
-        window.location.replace("/");
-      }
-    }
-
-    throw new Error(data.message || "Error");
+    throw new Error(data?.message || "Error");
   }
 
   return data;
 };
 
+// 🔥 API wrapper
 export const API = {
   get: (url) => request(url),
   post: (url, body) =>
-    request(url, { method: "POST", body: JSON.stringify(body) }),
+    request(url, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   put: (url, body) =>
-    request(url, { method: "PUT", body: JSON.stringify(body) }),
+    request(url, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
   delete: (url) =>
-    request(url, { method: "DELETE" }),
+    request(url, {
+      method: "DELETE",
+    }),
 };

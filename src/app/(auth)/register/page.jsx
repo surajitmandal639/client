@@ -1,15 +1,24 @@
+// src/app/(auth)/register/page.jsx
+
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
-import { API } from "@/services/api";
+import Link from "next/link";
+import { useAuth } from "@/modules/auth/providers/AuthProvider";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { setCookie } from "@/lib/utils";
 
-export default function Page() {
+export default function RegisterPage() {
+  const router = useRouter();
+  const { register, loading, setLoading } = useAuth(); // AuthProvider থেকে আসছে
+
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
+    password_confirmation: "",
   });
 
   const handleChange = (e) => {
@@ -22,13 +31,27 @@ export default function Page() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      await API.post("/register", form);
+    // পাসওয়ার্ড ম্যাচিং চেক
+    if (form.password !== form.password_confirmation) {
+      return toast.error("Passwords do not match!");
+    }
 
-      alert("Registration successful");
-      window.location.href = "/login";
+    setLoading(true); // লোডিং শুরু
+
+    try {
+      // AuthProvider এর register ফাংশন কল হচ্ছে
+      const res = await register(form);
+      
+      if (res.status === "success") {
+        sessionStorage.setItem("register-success", JSON.stringify(res?.data?.user?.name)); // sessionStorage তে ইউজার ডেটা রাখা হচ্ছে
+        toast.success(res.message || "Registration Successful!");
+        router.push("/dashboard");
+      }
     } catch (err) {
-      alert(err.message || "Something went wrong");
+      // Laravel validation বা অন্য এরর হ্যান্ডেল করবে
+      toast.error(err.message || "Registration failed");
+    } finally {
+      setLoading(false); // কাজ শেষে লোডিং বন্ধ
     }
   };
 
@@ -98,13 +121,35 @@ export default function Page() {
             />
           </div>
 
+          {/* Password Confirmation */}
+          <div>
+            <label className="block text-sm font-medium text-gray-100">
+              Confirm Password
+            </label>
+            <input
+              name="password_confirmation"
+              type="password"
+              required
+              autoComplete="new-password"
+              onChange={handleChange}
+              className="mt-2 block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
           {/* Submit */}
           <button
+            type="submit"
+            disabled={loading} // Disable while loading
+            className="w-full rounded-md bg-indigo-500 py-2 text-white font-semibold hover:bg-indigo-400 transition disabled:opacity-50"
+          >
+            {loading ? "Creating Account..." : "Register"}
+          </button>
+          {/* <button
             type="submit"
             className="w-full rounded-md bg-indigo-500 py-2 text-white font-semibold hover:bg-indigo-400 transition"
           >
             Register
-          </button>
+          </button> */}
         </form>
 
         {/* Login link */}

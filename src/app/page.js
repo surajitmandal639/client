@@ -1,3 +1,5 @@
+// src/app/page.js
+
 "use client";
 
 import Image from "next/image";

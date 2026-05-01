@@ -36,30 +36,59 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 src/
-├── app/                 # ১. রাউটিং এবং পেজ (Routing)
-│   ├── (auth)/          # লগইন, রেজিস্ট্রেশন (URL-এ দেখাবে না)
+├── app/                         # ১. Routing (Next.js App Router)
+│   ├── (auth)/
 │   │   └── login/page.jsx
-│   ├── (dashboard)/     # ড্যাশবোর্ড এবং প্রোফাইল (সুরক্ষিত পেজ)
-│   │   ├── layout.jsx   # ড্যাশবোর্ডের সাইডবার/লেআউট
-│   │   └── profile/page.jsx
-│   ├── layout.js        # মেইন লেআউট (যেখানে Providers থাকবে)
-│   └── page.js          # ল্যান্ডিং পেজ
-├── components/          # ২. পুনরায় ব্যবহারযোগ্য UI (Components)
-│   ├── ui/              # ছোট ছোট বাটন, ইনপুট (Atomic)
-│   ├── modules/         # লগইন ফর্ম বা প্রজেক্ট টেবিলের মতো বড় অংশ
-│   └── shared/          # নেভিগেশন বার, ফুটার, লোডার
-├── providers/           # ৩. গ্লোবাল স্টেট (লারাভেল প্রোভাইডার কনসেপ্ট)
-│   ├── AppProviders.jsx # সব প্রোভাইডারের মাস্টার ফাইল
-│   ├── AuthProvider.jsx # লগইন এবং টোকেন স্টেট
-│   └── ThemeProvider.jsx# ডার্ক মোড এবং ল্যাঙ্গুয়েজ
-├── services/            # ৪. এপিআই কল এবং লজিক (API Layer)
-│   ├── api.js           # আপনার সেই Fetch Wrapper (বেস ফাইল)
-│   ├── authService.js   # লগইন/লগআউট এপিআই কল
-│   └── projectService.js# MSBY প্রজেক্ট সংক্রান্ত কল
-├── hooks/               # ৫. কাস্টম হুক (যেমন: useAuth)
-├── lib/                 # ৬. থার্ড পার্টি কনফিগ এবং হেল্পার (utils.js)
-├── middleware.js        # ৭. সিকিউরিটি গেটকিপার (Route Protection)
-└── .env.local           # ৮. এপিআই ইউআরএল এবং সিক্রেট
+│   │
+│   ├── (dashboard)/
+│   │   ├── layout.jsx           # Protected layout (sidebar etc.)
+│   │   ├── page.jsx             # Dashboard home
+│   │   └── users/
+│   │       ├── page.jsx         # Users list
+│   │       └── [id]/page.jsx    # User details
+│   │
+│   ├── layout.jsx               # Root layout (AppProviders here)
+│   └── page.jsx                 # Landing page
+
+├── modules/                     # 🔥 Feature-based architecture
+│   ├── auth/
+│   │   ├── services/
+│   │   │   └── authService.js
+│   │   ├── providers/
+│   │   │   └── AuthProvider.jsx
+│   │   ├── hooks/
+│   │   │   └── useAuth.js (optional)
+│   │   └── components/
+│   │       └── LoginForm.jsx
+│   │
+│   ├── users/
+│   │   ├── services/
+│   │   │   └── userService.js
+│   │   ├── hooks/
+│   │   │   ├── useUsers.js
+│   │   │   └── useUser.js
+│   │   ├── components/
+│   │   │   ├── UserTable.jsx
+│   │   │   └── UserForm.jsx
+│   │   └── utils/
+│   │       └── userHelpers.js
+
+├── components/                  # ২. Shared UI
+│   ├── ui/                      # Button, Input, Modal
+│   └── shared/                  # Navbar, Footer, Loader
+
+├── providers/                   # ৩. Global providers
+│   └── AppProviders.jsx         # combine সব provider
+
+├── services/                    # ৪. Core API layer
+│   └── api.js                   # axios config (baseURL, interceptors)
+
+├── lib/                         # ৫. Helpers / configs
+│   └── utils.js
+
+├── middleware.js                # ৬. Route protection
+
+└── .env.local                   # ৭. Env variables
 
 
 
